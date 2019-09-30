@@ -1,8 +1,9 @@
 package swing;
 
-import bean.User;
+import user.UserIlegalTypeChangeException;
+import user.User;
+import user.UserHandler;
 import model.UserTable;
-import util.ArrayPosition;
 
 import java.awt.Color;
 import java.awt.Rectangle;
@@ -18,16 +19,14 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 
-class NewWindow extends JDialog{
+class UserEditWindow extends JDialog{
     private final JTextField nameField;
     private final JTextField lastNameField;
     private final JComboBox<String> typeList;
-    private final User[] usersArray;
     private final JTable table;
-    NewWindow(JFrame parent, boolean modal, User[] usersArray, JTable table){
-        super(parent, modal);
+    UserEditWindow(JFrame parent, JTable table){
+        super(parent, true);
 
-        this.usersArray = usersArray;
         this.table = table;
 
         setBounds(new Rectangle(500,150));
@@ -42,22 +41,50 @@ class NewWindow extends JDialog{
         lastNameField = new JTextField();
 
         JLabel typeLabel = new JLabel("Tipo");
-        String[] tipos = {"Administrador", "Usuario"};
+
+        user.User.Type[] types = User.Type.values();
+        String[] tipos = new String[types.length];
+        for (int i = 0; i < types.length; i++) {
+            tipos[i] = types[i].toString();
+        }
         typeList = new JComboBox<>(tipos);
 
         //Load clicked user information
-        User usuarioSeleccionado = usersArray[table.getSelectedRow()];
+        User usuarioSeleccionado = UserHandler.getUsers()[table.getSelectedRow()];
         nameField.setText(usuarioSeleccionado.getName());
         lastNameField.setText(usuarioSeleccionado.getLastName());
         typeList.setSelectedItem(usuarioSeleccionado.getType());
 
         JButton saveButton = new JButton("Guardar");
         saveButton.addActionListener(e -> {
-            usersArray[table.getSelectedRow()]
-                    = new User(nameField.getText(), lastNameField.getText(), Objects.requireNonNull(typeList.getSelectedItem()).toString());
-            updateTableData();
-            JOptionPane.showMessageDialog(NewWindow.this, "Se actualizaron los datos.");
-            dispose();
+            User modifiedUser = UserHandler.getUsers()[table.getSelectedRow()];
+            String name = nameField.getText();
+            String lastName = lastNameField.getText();
+
+            if (name.trim().length()==0) {
+                JOptionPane.showMessageDialog(UserEditWindow.this, "Nombre inválido");
+                return;
+            }
+            if (lastName.trim().length()==0) {
+                JOptionPane.showMessageDialog(UserEditWindow.this, "Apellido inválido");
+                return;
+            }
+
+
+
+            try {
+                modifiedUser.setType(Objects.requireNonNull(typeList.getSelectedItem()).toString().toUpperCase());
+                modifiedUser.setName(name);
+                modifiedUser.setLastName(lastName);
+
+                updateTableData(UserHandler.getUsers());
+                JOptionPane.showMessageDialog(UserEditWindow.this, "Se actualizaron los datos.");
+                dispose();
+            } catch (UserIlegalTypeChangeException ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(UserEditWindow.this, "No se puede convertir un usuario a administrador");
+            }
+
         });
         
         JButton cancelButton = new JButton("Cancelar");
@@ -113,10 +140,7 @@ class NewWindow extends JDialog{
         add(container5);
     }
 
-    private void updateTableData () {
-        int index = ArrayPosition.getNotNullIndex(usersArray);
-        User[] nonEmptyArray = new User[index];
-        System.arraycopy(usersArray,0,nonEmptyArray,0,index);
-        table.setModel(new UserTable(nonEmptyArray));
+    private void updateTableData (User[] users) {
+        table.setModel(new UserTable(users));
     }
 }

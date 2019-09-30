@@ -1,20 +1,20 @@
 package model;
 
-import user.User;
+import transport.Vehicle;
 
 import javax.swing.table.AbstractTableModel;
 
-public class UserTable extends AbstractTableModel {
-    private final User[] userArray;
-    private final String[] columnNames = {"No.", "Nombre", "Apellido", "Tipo"};
-    public UserTable(User[] userArray) {
-        this.userArray = userArray;
+public class VehicleTable extends AbstractTableModel {
+    private final Vehicle[] vehicleArray;
+    private final String[] columnNames = {"Código", "Nombre","Tipo"};
+    public VehicleTable(Vehicle[] vehicleArrayArray) {
+        this.vehicleArray = vehicleArrayArray;
         this.fireTableDataChanged();
     }
 
     @Override
     public int getRowCount(){
-        return this.userArray.length;
+        return this.vehicleArray.length;
     }
 
     @Override
@@ -29,20 +29,17 @@ public class UserTable extends AbstractTableModel {
 
     public Object getValueAt(int row, int column){
         String valor = "";
-        User user = this.userArray[row];
-        if(user != null) {
+        Vehicle vehicle = this.vehicleArray[row];
+        if(vehicle != null) {
             switch (column) {
                 case 0:
-                    valor = String.valueOf(row + 1);
+                    valor = vehicle.getCode();
                     break;
                 case 1:
-                    valor = user.getName();
+                    valor = vehicle.getName();
                     break;
                 case 2:
-                    valor = user.getLastName();
-                    break;
-                case 3:
-                    valor = user.getType().toString();
+                    valor = vehicle.getVehicleType();
                     break;
             }
         }

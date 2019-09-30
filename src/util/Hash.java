@@ -3,12 +3,18 @@ package util;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Objects;
 
 public class Hash {
 
-    public static String getTextHash(String text) throws NoSuchAlgorithmException {
-        final MessageDigest digest = MessageDigest.getInstance("SHA3-256");
-        final byte[] hashBytes = digest.digest(
+    public static String getStringHash(String text) {
+        MessageDigest digest = null;
+        try {
+            digest = MessageDigest.getInstance("SHA3-256");
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        final byte[] hashBytes = Objects.requireNonNull(digest).digest(
                 text.getBytes(StandardCharsets.UTF_8));
         return bytesToHex(hashBytes);
     }

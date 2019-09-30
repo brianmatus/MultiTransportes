@@ -1,53 +1,70 @@
 package swing;
 
+import user.User;
+import user.UserHandler;
+
 import java.awt.*;
-import java.awt.event.*;
 import javax.swing.*;
-import javax.swing.event.*;
 
 public class LoginWindow extends JFrame {
-    private JButton jcomp1;
-    private JButton jcomp2;
-    private JButton olaKAse;
-    private JLabel answerLabel;
 
     public LoginWindow() {
-
-        setBounds(new Rectangle(500, 600));
-        setLocationRelativeTo(null);
-        setTitle("Ventana principal");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-
         //construct components
-        jcomp1 = new JButton ("Button 1");
-        jcomp2 = new JButton ("Button 2");
-        olaKAse = new JButton ("Ola k ase");
-        answerLabel = new JLabel ("--");
+        JButton loginButton = new JButton("Iniciar Sesión");
+
+        JLabel jcomp2 = new JLabel("Inicio de Sesión");
+        JTextField userTextField = new JTextField(5);
+        JPasswordField passwordTextField = new JPasswordField(5);
+        JLabel jcomp5 = new JLabel("Usuario");
+        JLabel jcomp6 = new JLabel("Contraseña");
+
+        //set components properties
+        userTextField.setToolTipText ("Usuario");
+        passwordTextField.setToolTipText ("Contraseña");
 
         //adjust size and set layout
-        setPreferredSize (new Dimension (624, 388));
+        setBounds(new Rectangle(286, 307));
         setLayout (null);
 
+        loginButton.addActionListener(e -> {
+            String username = userTextField.getText();
+            String enteredPassword = new String(passwordTextField.getPassword());
+
+            User[] usersArray = UserHandler.getUsers();
+            boolean userExists = false;
+            for (User user : usersArray) {
+                if (user.getUsername().equals(username)) {
+                    userExists = true;
+                    if (user.matchPassword(enteredPassword)) {
+                        System.out.println("GG ez");
+                        CountryListWindow countryListWindow = new CountryListWindow();
+                        countryListWindow.setVisible(true);
+                        this.setVisible(false);
+                    }
+                    else {
+                        System.out.println("Contraseña invalida");
+                    }
+                }
+            }
+            if (!userExists) {
+                System.out.println("Usuario inexistente");
+            }
+        });
+
         //add components
-        add (jcomp1);
+        add (loginButton);
         add (jcomp2);
-        add (olaKAse);
-        add (answerLabel);
+        add (userTextField);
+        add (passwordTextField);
+        add (jcomp5);
+        add (jcomp6);
 
         //set component bounds (only needed by Absolute Positioning)
-        jcomp1.setBounds (25, 35, 100, 20);
-        jcomp2.setBounds (55, 65, 100, 20);
-        olaKAse.setBounds (460, 120, 140, 20);
-        answerLabel.setBounds (245, 165, 100, 25);
-    }
-
-
-    public static void main (String[] args) {
-        JFrame frame = new JFrame ("LoginWindow");
-        frame.setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
-        frame.getContentPane().add (new LoginWindow());
-        frame.pack();
-        frame.setVisible (true);
+        loginButton.setBounds (80, 220, 140, 25);
+        jcomp2.setBounds (95, 10, 100, 25);
+        userTextField.setBounds (60, 110, 180, 25);
+        passwordTextField.setBounds (60, 175, 180, 25);
+        jcomp5.setBounds (60, 90, 100, 25);
+        jcomp6.setBounds (60, 155, 100, 25);
     }
 }

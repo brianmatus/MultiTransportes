@@ -1,20 +1,21 @@
 package model;
 
-import user.User;
+import location.Entity;
+import location.Facility;
 
 import javax.swing.table.AbstractTableModel;
 
-public class UserTable extends AbstractTableModel {
-    private final User[] userArray;
-    private final String[] columnNames = {"No.", "Nombre", "Apellido", "Tipo"};
-    public UserTable(User[] userArray) {
-        this.userArray = userArray;
+public class FacilityTable extends AbstractTableModel {
+    private final Entity[] facilityArray;
+    private final String[] columnNames = {"Código", "Nombre","Tipo"};
+    public FacilityTable(Entity[] facilityArrayArray) {
+        this.facilityArray = facilityArrayArray;
         this.fireTableDataChanged();
     }
 
     @Override
     public int getRowCount(){
-        return this.userArray.length;
+        return this.facilityArray.length;
     }
 
     @Override
@@ -29,20 +30,17 @@ public class UserTable extends AbstractTableModel {
 
     public Object getValueAt(int row, int column){
         String valor = "";
-        User user = this.userArray[row];
-        if(user != null) {
+        Facility facility = (Facility) this.facilityArray[row];
+        if(facility != null) {
             switch (column) {
                 case 0:
-                    valor = String.valueOf(row + 1);
+                    valor = facility.getCode();
                     break;
                 case 1:
-                    valor = user.getName();
+                    valor = facility.getName();
                     break;
                 case 2:
-                    valor = user.getLastName();
-                    break;
-                case 3:
-                    valor = user.getType().toString();
+                    valor = facility.getType();
                     break;
             }
         }

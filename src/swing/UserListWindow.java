@@ -1,48 +1,39 @@
 package swing;
 
-import bean.User;
+import user.User;
+import user.UserHandler;
 import model.UserTable;
-import util.ArrayPosition;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Objects;
 
-public class MainWindow extends JFrame {
-    private User[] usersArray;
-    private final JTextField name_TextField = new JTextField();
-    private final JTextField lastName_TextField = new JTextField();
+class UserListWindow extends JFrame {
+    private final JTextField name_TextField = new HintTextField("Nombre");
+    private final JTextField lastName_TextField = new HintTextField("Apellido");
+
+    private final JTextField username_TextField = new HintTextField("Usuario");
+    private final JTextField password_TextField = new HintTextField("Contraseña");
+
     private final JComboBox<String> type_Combobox = new JComboBox<>();
     private final JTable userTable = new JTable();
 
-    public MainWindow(){
+    public UserListWindow(){
         super();
-        setBounds(new Rectangle(500, 600));
+        setBounds(new Rectangle(700, 800));
         setLocationRelativeTo(null);
         setTitle("Ventana principal");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        usersArray = new User[100];
-        User u1 = new User("Brian","Matus", "Administrador");
-        User u2 = new User("Hector", "Rodriguez", "Administrador");
-        User u3 = new User("Marta", "Castillo", "Moderador");
-        User u4 = new User("Miau", "Pio", "Moderador");
-        User u5 = new User("GG", "ez", "Moderador");
-
-        addUser(u1);
-        addUser(u2);
-        addUser(u3);
-        addUser(u4);
-        addUser(u5);
-        updateTableData();
+        updateTableData(UserHandler.getUsers());
 
         userTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if(e.getClickCount() == 2){
-                    new NewWindow(MainWindow.this,
-                            true, usersArray, userTable).setVisible(true);
+                    new UserEditWindow(UserListWindow.this,
+                            userTable).setVisible(true);
                 }
             }
         });
@@ -62,14 +53,21 @@ public class MainWindow extends JFrame {
 
         //Fields
         name_TextField.setPreferredSize(new Dimension(70, HEIGHT));
+        username_TextField.setPreferredSize(new Dimension(70, HEIGHT));
         lastName_TextField.setPreferredSize(new Dimension(70, HEIGHT));
+        password_TextField.setPreferredSize(new Dimension(70, HEIGHT));
+
         JButton addButton = new JButton("Agregar");
         JButton deleteButton = new JButton("Eliminar");
 
         //New User Data Fields
-        type_Combobox.addItem("Usuario");
+        for (User.Type value : User.Type.values()) {
+            type_Combobox.addItem(value.toString());
+        }
+        interactionPanel.add(username_TextField);
         interactionPanel.add(name_TextField);
         interactionPanel.add(lastName_TextField);
+        interactionPanel.add(password_TextField);
         interactionPanel.add(type_Combobox);
 
         JPanel mainPanel = new JPanel();
@@ -87,46 +85,37 @@ public class MainWindow extends JFrame {
         });
 
         deleteButton.addActionListener(e -> {
-            if(JOptionPane.showConfirmDialog(MainWindow.this, "¿Desea eliminar esta fila?",
+            if(JOptionPane.showConfirmDialog(UserListWindow.this, "¿Desea eliminar esta fila?",
                     "Eliminar fila", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION){
-                removeUser(userTable.getSelectedRow());
+                //removeUser(userTable.getSelectedRow());
+                User[] updatedUsers = UserHandler.removeUser(userTable.getSelectedRow());
+                updateTableData(updatedUsers);
             }
         });
     }
 
     private void addUserFromTable(){
         User user = new User(
+                username_TextField.getText(),
                 name_TextField.getText(),
                 lastName_TextField.getText(),
-                Objects.requireNonNull(type_Combobox.getSelectedItem()).toString());
+                User.Type.valueOf(Objects.requireNonNull(type_Combobox.getSelectedItem()).toString()),
+                password_TextField.getText()
+        );
 
         //Clean fields
+        username_TextField.setText("");
         name_TextField.setText("");
         lastName_TextField.setText("");
+        password_TextField.setText("");
 
-        addUser(user);
-        updateTableData();
+
+        User[] updatedUsers = UserHandler.addUser(user);
+        updateTableData(updatedUsers);
     }
 
-    private void addUser(User user) {
-        usersArray[ArrayPosition.getUserCounter()] = user;
-    }
-
-    private void removeUser(int index) {
-        User[] newArray = new User[usersArray.length];
-        System.arraycopy(usersArray,0,newArray,0,index);
-        System.arraycopy(usersArray,index+1,newArray,index, usersArray.length-index-1);
-        usersArray = newArray;
-        ArrayPosition.removedUser();
-
-        updateTableData();
-    }
-
-    private void updateTableData () {
-        int index = ArrayPosition.getNotNullIndex(usersArray);
-        User[] nonEmptyArray = new User[index];
-        System.arraycopy(usersArray,0,nonEmptyArray,0,index);
-        userTable.setModel(new UserTable(nonEmptyArray));
+    private void updateTableData (User[] users) {
+        userTable.setModel(new UserTable(users));
     }
 
 }
